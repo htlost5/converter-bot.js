@@ -1,7 +1,25 @@
+const express = require('express');
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, PresenceUpdateStatus, ActivityType, WebhookClient } = require('discord.js');
 const config = require('./config.json');
+// const dotenv = require('dotenv')
+
+
+// HTTPサーバ
+const app = express();
+const PORT = process.env.PORT || 8000;
+
+app.get('/', (req, res) => res.send('ok')); // ヘルス用
+app.get('/health', (req, res) => res.status(200).send('healthy'));
+
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`HTTP server listening on ${PORT}`);
+});
+
+
+
+// dotenv.config();
 
 const TOKEN = process.env.TOKEN;
 
