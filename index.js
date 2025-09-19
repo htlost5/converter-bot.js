@@ -3,9 +3,6 @@ const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, PresenceUpdateStatus, ActivityType, WebhookClient } = require('discord.js');
 const config = require('./config.json');
 
-const dotenv = require('dotenv');
-dotenv.config();
-
 const TOKEN = process.env.TOKEN;
 
 const channelWebhooks = {
