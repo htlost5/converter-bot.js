@@ -1,13 +1,3 @@
-const http = require('http');
-const PORT = process.env.PORT || 3000;
-
-http.createServer((req, res) => {
-    res.writeHead(200, {'content-type':'text/plain'});
-    res.end('ok');
-}).listen(PORT, () => {
-    console.log(`Health server listening on ${PORT}`);
-});
-
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, PresenceUpdateStatus, ActivityType, WebhookClient } = require('discord.js');
