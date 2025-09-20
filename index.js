@@ -23,6 +23,12 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 
 const TOKEN = process.env.TOKEN;
 
+const channelIds = {
+    general: process.env.RUN_GENERAL_CHANNEL_ID,
+    save: process.env.RUN_SAVE_CHANNEL_ID,
+    log: process.env.RUN_LOG_CHANNEL_ID
+}
+
 const channelWebhooks = {
     general: "https://discord.com/api/webhooks/1417571745921237133/1JgD750mXRnI1hTC5Dz1LJNPEVrOXU3tQxW-oV5CmlOzfa8L2zqTvW_vizvxRC91nCkE",
     save: "https://discord.com/api/webhooks/1417571759590346844/eUWie437hjQoR5G78859mXkgy7tx70y6QvTSaflvgJ1o-vvDVd7YsJxnoMzZ5Gibf9Uy",
@@ -75,15 +81,18 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
+// メッセージ変換および転送
 client.on(Events.MessageCreate, sourceMessage => {
-    const message = sourceMessage;
+    // メッセージ検出のチャンネルを特定
+    if (!sourceMessage.channel.id === channelIds.general) return;
 
     // 二重検出の防止
-    if (message.author.id === client.user.id || message.webhookId) return;
+    if (sourceMessage.author.id === client.user.id || sourceMessage.webhookId) return;
 
     // 空白メッセージ排除
-    if (message.content.trim() === '') return;
+    if (sourceMessage.content.trim() === '') return;
 
+    const message = sourceMessage;
     const status = config.status;
     const num = config.n;
 
@@ -112,8 +121,7 @@ client.on(Events.MessageCreate, sourceMessage => {
 
         // メッセージ変換
         codes = Array.from(message.content).map(ch => ch.codePointAt(0).toString(num));
-        lengths = codes.map(c => c.length);
-        convertedMessage = codes.join("");
+        convertedMessage = codes.join("|");
 
         // 変換後送信
         generalWebhook.send({
