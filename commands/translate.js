@@ -1,4 +1,17 @@
 const { SlashCommandBuilder, ContextMenuCommandBuilder } = require('discord.js');
+const config = require('../config.json');
+// const dotenv = require('dotenv');
+
+// dotenv.config();
+
+const token = process.env.TOKEN;
+const channelId = process.env.RUN_GENERAL_CHANNEL_ID;
+
+const base = config.n
+const translater = (txt) => {
+    const codes = txt.split('|').map(code => parseInt(code, base));
+    return String.fromCodePoint(...codes);
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -6,14 +19,42 @@ module.exports = {
         .setDescription('to translate meesage, if you input the message_ID you can translate that.')
         .addStringOption(option => 
             option
-                .setName('ID/text')
-                .setDescription('メッセージIDまたはテキストを入力')
-                .setRequired(false)
+                .setName('id_text_url')
+                .setDescription('メッセージID、テキスト、URLのいずれかを入力')
+                .setRequired(true)
         ),
     async execute(interaction) {
-        const txt = interaction.options.getString('ID/text');
-        if(Number.isInteger(Number(txt)) && txt.length) {
-            if()
+        const txt = interaction.options.getString('id_text_url');
+
+        if (Number.isInteger(Number(txt))) {
+            const url = `https://discord.com/api/v10/channels/${channelId}/messages/${txt}`;
+            try {
+                const res = await fetch(url, {
+                    headers: { Authorization: `Bot ${token}`}
+                });
+                const msg = await res.json();
+                const original = translater(msg.content);
+                return interaction.reply(original);
+
+            } catch (error) {
+                interaction.reply("error: メッセージが削除された可能性あり");
+                console.log(error);
+                return;
+            }
+        } else {
+            const url_match = /https?:\/\/discord\.com\/channels\/(\d+)\/(\d+)\/(\d+)/g;
+            const matches = url_match.exec(txt);
+            if (matches) {
+                const [_, guildId, channelId, messageId] = matches;
+                const channel = await interaction.client.channels.fetch(channelId);
+                const msg = await channel.messages.fetch(messageId);
+                const original = translater(msg.content);
+                return interaction.reply(original);
+            } else {
+                const msg = txt;
+                const original = translater(msg);
+                return interaction.reply(original);
+            }
         }
     }
 }

@@ -3,7 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, PresenceUpdateStatus, ActivityType, WebhookClient } = require('discord.js');
 const config = require('./config.json');
-// const dotenv = require('dotenv')
+// const dotenv = require('dotenv');
+const { log } = require('node:console');
 
 
 // HTTPサーバ
@@ -30,14 +31,18 @@ const channelIds = {
 }
 
 const channelWebhooks = {
-    general: "https://discord.com/api/webhooks/1417571745921237133/1JgD750mXRnI1hTC5Dz1LJNPEVrOXU3tQxW-oV5CmlOzfa8L2zqTvW_vizvxRC91nCkE",
-    save: "https://discord.com/api/webhooks/1417571759590346844/eUWie437hjQoR5G78859mXkgy7tx70y6QvTSaflvgJ1o-vvDVd7YsJxnoMzZ5Gibf9Uy",
-    log: "https://discord.com/api/webhooks/1417571754733207643/T9QCj3F3C2A6EYIaFlcO7Aa2q42W4VXkFAZ3xy8B0fBdXHAhpA9OqvkIOL0M--QY63gh"
+    general: process.env.RUN_GENERAL_WEBHOOK_URL,
+    save: process.env.RUN_SAVE_WEBHOOK_URL,
+    log: process.env.RUN_LOG_WEBHOOK_URL
 }
 
 const generalWebhook = new WebhookClient({ url: channelWebhooks.general });
 const saveWebhook = new WebhookClient({ url: channelWebhooks.save });
 const logWebhook = new WebhookClient({ url: channelWebhooks.log });
+
+const avatarURLs = {
+    vscode: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz7k7a9qelbBTHXSKbKwRi_JdjfL3BJuH-xQ&s"
+}
 
 const client = new Client({ 
     intents: [
@@ -84,7 +89,7 @@ client.on(Events.InteractionCreate, async interaction => {
 // メッセージ変換および転送
 client.on(Events.MessageCreate, sourceMessage => {
     // メッセージ検出のチャンネルを特定
-    if (!sourceMessage.channel.id === channelIds.general) return;
+    if (sourceMessage.channel.id !== channelIds.general) return;
 
     // 二重検出の防止
     if (sourceMessage.author.id === client.user.id || sourceMessage.webhookId) return;
@@ -96,7 +101,7 @@ client.on(Events.MessageCreate, sourceMessage => {
     const status = config.status;
     const num = config.n;
 
-    if (status === true && (num >= 2 || num <= 36)) {
+    if (status === true && (num >= 2 && num <= 36)) {
         // メッセージ削除
         if (typeof message.content === 'string' && message.content.trim() !== '') {
             message.delete();
