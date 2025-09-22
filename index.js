@@ -3,9 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, PresenceUpdateStatus, ActivityType, WebhookClient } = require('discord.js');
 const config = require('./config.json');
-// const dotenv = require('dotenv');
-const { log } = require('node:console');
 
+// const dotenv = require('dotenv');
+// dotenv.config();
 
 // HTTPサーバ
 const app = express();
@@ -19,8 +19,6 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 });
 
 
-
-// dotenv.config();
 
 const TOKEN = process.env.TOKEN;
 
@@ -124,9 +122,18 @@ client.on(Events.MessageCreate, sourceMessage => {
             return
         }
 
-        // メッセージ変換
-        codes = Array.from(message.content).map(ch => ch.codePointAt(0).toString(num));
-        convertedMessage = codes.join("|");
+        // メッセージ変
+        const utf8Encoder = new TextEncoder();
+        const utf8Bytes = utf8Encoder.encode(message.content);
+
+        const maxCodePoint = 0x10FFFF;
+        const max_encode = utf8Encoder.encode(String.fromCodePoint(maxCodePoint));
+        const maxLength = Math.max(...Array.from(max_encode).map(b => b.toString(num).length));
+        console.log(maxLength);
+
+        const convertedMessage_array = Array.from(utf8Bytes).map(bin => bin.toString(num).padStart(maxLength, '0'));
+        convertedMessage_array.push(num);
+        const convertedMessage = convertedMessage_array.join(' ');
 
         // 変換後送信
         generalWebhook.send({

@@ -1,17 +1,21 @@
 const { SlashCommandBuilder, ContextMenuCommandBuilder } = require('discord.js');
-const config = require('../config.json');
 // const dotenv = require('dotenv');
-
 // dotenv.config();
 
 const token = process.env.TOKEN;
 const channelId = process.env.RUN_GENERAL_CHANNEL_ID;
 
-const base = config.n
 const translater = (txt) => {
-    const codes = txt.split('|').map(code => parseInt(code, base));
-    return String.fromCodePoint(...codes);
+    const element = txt.split(' ');
+    const base = parseInt(element.pop(), 10);
+    console.log(base);
+
+    const bytes = Uint8Array.from(element.map(code => parseInt(code, base)));
+    
+    const decoder = new TextDecoder();
+    return decoder.decode(bytes);
 }
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -34,6 +38,7 @@ module.exports = {
                 });
                 const msg = await res.json();
                 const original = translater(msg.content);
+                console
                 return interaction.reply(original);
 
             } catch (error) {
